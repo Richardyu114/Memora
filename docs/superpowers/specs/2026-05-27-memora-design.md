@@ -112,14 +112,15 @@ flowchart LR
   MCP --> Engine
   CLI --> Engine
 
-  Engine -->|"append / replay"| Events
-  Engine -->|"query / rebuild"| Derived
+  Engine -->|"write / revise / promote"| Events
+  Events -->|"replay current state"| Engine
+  Engine -->|"read / query / rebuild"| Derived
   Events -->|"derive"| Derived
 
   Events -->|"commit / push"| Git
   Git --> GitHub
   GitHub -->|"fetch / pull"| Git
-  Git -->|"merge events"| Events
+  Git -->|"merge event history"| Events
 
   classDef clients fill:#eef2ff,stroke:#6366f1,color:#111827
   classDef access fill:#ecfeff,stroke:#0891b2,color:#111827
@@ -143,12 +144,15 @@ Memora exposes two first-version entry points:
 
 Both entry points call the same core engine. They must not implement separate memory behavior.
 
+Memora supports logical updates to memory, skills, and soul records. Those updates are stored as new events instead of in-place edits, so the system keeps an auditable history while still exposing the latest corrected state through snapshots and recall.
+
 ### Core Memory Engine
 
 The core engine owns:
 
 - Record validation.
 - Event append and replay.
+- Logical record revision.
 - Boot context generation.
 - Recall filtering and ranking.
 - Sync cursor evaluation.
@@ -341,6 +345,8 @@ Adapter data isolates client behavior. It must not redefine the canonical skill.
 
 All writes append events. Events are immutable facts. Derived views are rebuilt from events.
 
+Memora still supports modifying records at the logical level. A memory, skill, or soul can be corrected, refined, promoted, archived, or quarantined. Each change appends a new event that references the target record. Replay produces the current state.
+
 Example event:
 
 ```json
@@ -361,12 +367,33 @@ Example event:
 Supported first-version operations:
 
 - `upsert_record`
+- `revise_record`
 - `promote_record`
 - `archive_record`
 - `quarantine_record`
 - `link_records`
 
 Records are not physically deleted in normal operation. Removal is represented through state changes.
+
+Revision event example:
+
+```json
+{
+  "event_id": "evt_01h...",
+  "op": "revise_record",
+  "record_id": "rec_01h...",
+  "patch": {
+    "content.text": "Use GitHub private repos as the first sync backend, with events as the only default synced source of truth.",
+    "confidence": 0.92
+  },
+  "reason": "Clarified sync semantics after review.",
+  "created_at": "2026-05-27T00:00:00Z",
+  "source": {
+    "client": "codex",
+    "device_id": "device_linuxbox"
+  }
+}
+```
 
 ## MCP Tools and CLI
 
@@ -488,6 +515,29 @@ CLI:
 mem write --kind session_summary --project . --text "Completed the initial design discussion."
 ```
 
+### `revise`
+
+Used to correct, refine, or extend an existing record without rewriting history. This appends a `revise_record` event and updates the current replayed state.
+
+Input:
+
+```json
+{
+  "record_id": "rec_...",
+  "patch": {
+    "content.text": "Use GitHub private repos as the first sync backend, with events as the only default synced source of truth.",
+    "confidence": 0.92
+  },
+  "reason": "Clarified sync semantics after review."
+}
+```
+
+CLI:
+
+```bash
+mem revise rec_123 --set confidence=0.92 --reason "Clarified sync semantics after review."
+```
+
 ### `sync`
 
 Used for startup sync, periodic sync, manual fetch, pull, and push.
@@ -567,9 +617,10 @@ Agents should follow this contract:
 2. Call `recall` when context is missing or uncertain.
 3. Call `sync` periodically or when the user asks to refresh memory.
 4. Write a `session_summary` at the end of meaningful work.
-5. Write raw notes as `agent_note`, not canonical memory.
-6. Do not promote long-term preferences, soul records, or global skills without user confirmation.
-7. Treat sync `interrupt` results as a reason to pause and inspect related records.
+5. Use `revise` when an existing memory, skill, or soul record needs correction or refinement.
+6. Write raw notes as `agent_note`, not canonical memory.
+7. Do not promote long-term preferences, soul records, or global skills without user confirmation.
+8. Treat sync `interrupt` results as a reason to pause and inspect related records.
 
 Memora cannot force-push new content into a running agent context. Agents or host applications must call sync or recall.
 
