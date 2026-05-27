@@ -1,5 +1,7 @@
 # Memora
 
+![Memora hero](assets/memora-hero.png)
+
 Memora is a personal memory, skill, and soul layer for AI agents.
 
 It is designed for people who use multiple AI agents across multiple projects and want those agents to share the same durable context without making memory belong to any single agent. Agents are readers and writers; the long-lived context belongs to the user, projects, topics, and artifacts.
