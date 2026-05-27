@@ -6,6 +6,7 @@ import { homedir } from "node:os";
 import { Command } from "commander";
 import { version } from "./index.js";
 import { createEngine } from "./core/engine.js";
+import { runMcpServer } from "./mcp/server.js";
 
 const program = new Command();
 
@@ -91,6 +92,11 @@ program.command("list-recent")
     const engine = createEngine({ storePath: storePath() });
     printJson(await engine.listRecent(Number(options.limit)));
   });
+
+program.command("mcp").action(async () => {
+  const engine = createEngine({ storePath: storePath() });
+  await runMcpServer(engine);
+});
 
 program.parseAsync().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
