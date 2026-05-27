@@ -7,6 +7,7 @@ import { Command } from "commander";
 import { version } from "./index.js";
 import { createEngine } from "./core/engine.js";
 import { runMcpServer } from "./mcp/server.js";
+import { getGitSyncStatus } from "./sync/git.js";
 
 const program = new Command();
 
@@ -97,6 +98,12 @@ program.command("mcp").action(async () => {
   const engine = createEngine({ storePath: storePath() });
   await runMcpServer(engine);
 });
+
+program.command("sync")
+  .option("--status", "Show sync status")
+  .action(async () => {
+    printJson(await getGitSyncStatus(process.cwd()));
+  });
 
 program.parseAsync().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
