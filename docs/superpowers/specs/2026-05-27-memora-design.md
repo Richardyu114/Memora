@@ -167,13 +167,13 @@ The core engine treats agent clients as sources. It does not partition memory ow
 The default store path is:
 
 ```text
-~/.agent-mem/
+~/.memora/
 ```
 
 The repo under active work may optionally contain:
 
 ```text
-.agent-mem.json
+.memora.json
 ```
 
 That file can override project identity, tags, default skills, and sync policy. It is not required.
@@ -181,7 +181,7 @@ That file can override project identity, tags, default skills, and sync policy. 
 Recommended local store layout:
 
 ```text
-~/.agent-mem/
+~/.memora/
   config.json
   events/
     <device_id>/
@@ -226,7 +226,7 @@ explicit project_id
   > current directory name
 ```
 
-The explicit `project_id` can come from `.agent-mem.json` or API input.
+The explicit `project_id` can come from `.memora.json` or API input.
 
 Git remote URL is preferred across devices because local paths vary.
 
@@ -955,8 +955,8 @@ The MVP is successful when this flow works:
 - Runtime: Node.js.
 - CLI command: `mem`.
 - Package name: `memora` or a scoped package if needed.
-- Store path: `~/.agent-mem`.
-- Project config: optional `.agent-mem.json`.
+- Store path: `~/.memora`.
+- Project config: optional `.memora.json`.
 - Sync backend: GitHub private repo through SSH or user-configured Git credentials.
 - Sync mode: `session`.
 - Retrieval: rule-based by default, optional embeddings later.
