@@ -77,67 +77,61 @@ Agent clients
 ```
 
 ```mermaid
-flowchart TB
-  subgraph Agents["Agent clients"]
-    Codex["Codex"]
-    Claude["Claude"]
-    Cursor["Cursor"]
-    Other["Other agents / scripts"]
+flowchart LR
+  subgraph ClientLayer["Agent clients"]
+    A1["Codex"]
+    A2["Claude"]
+    A3["Cursor"]
+    A4["Scripts"]
   end
 
-  subgraph Access["Access layer"]
+  subgraph AccessLayer["Access layer"]
     MCP["MCP server"]
     CLI["CLI: mem"]
   end
 
-  subgraph Core["Core memory engine"]
-    Validate["Record validation"]
-    Events["Event append and replay"]
-    Boot["Boot context"]
-    Recall["Recall ranking"]
-    Promote["Promotion and state transitions"]
-    Safety["Sensitive content checks"]
-    Indexing["Snapshot and index rebuild"]
+  subgraph EngineLayer["Core memory engine"]
+    Engine["Validation, boot, recall, sync, promotion, safety"]
   end
 
-  subgraph Store["Local-first store: ~/.agent-mem"]
-    EventFiles["events/<device_id>/<yyyy-mm>/<event_id>.json"]
-    Snapshots["snapshots/*.json"]
-    Indexes["indexes/*.json"]
-    Config["config.json"]
+  subgraph StoreLayer["Local-first store"]
+    Events["Append-only events"]
+    Derived["Rebuildable snapshots and indexes"]
   end
 
-  subgraph Remote["Sync backend"]
+  subgraph SyncLayer["Sync backend"]
     Git["Git sync adapter"]
     GitHub["User-owned GitHub private repo"]
   end
 
-  Codex --> MCP
-  Claude --> MCP
-  Cursor --> MCP
-  Other --> CLI
+  A1 --> MCP
+  A2 --> MCP
+  A3 --> MCP
+  A4 --> CLI
 
-  MCP --> Core
-  CLI --> Core
+  MCP --> Engine
+  CLI --> Engine
 
-  Core --> Validate
-  Core --> Events
-  Core --> Boot
-  Core --> Recall
-  Core --> Promote
-  Core --> Safety
-  Core --> Indexing
+  Engine -->|"append / replay"| Events
+  Engine -->|"query / rebuild"| Derived
+  Events -->|"derive"| Derived
 
-  Events --> EventFiles
-  Indexing --> Snapshots
-  Indexing --> Indexes
-  Core --> Config
-
-  EventFiles --> Git
+  Events -->|"commit / push"| Git
   Git --> GitHub
-  GitHub --> Git
-  Git --> EventFiles
-  EventFiles --> Indexing
+  GitHub -->|"fetch / pull"| Git
+  Git -->|"merge events"| Events
+
+  classDef clients fill:#eef2ff,stroke:#6366f1,color:#111827
+  classDef access fill:#ecfeff,stroke:#0891b2,color:#111827
+  classDef engine fill:#f0fdf4,stroke:#16a34a,color:#111827
+  classDef store fill:#fff7ed,stroke:#ea580c,color:#111827
+  classDef sync fill:#fdf2f8,stroke:#db2777,color:#111827
+
+  class A1,A2,A3,A4 clients
+  class MCP,CLI access
+  class Engine engine
+  class Events,Derived store
+  class Git,GitHub sync
 ```
 
 ### Agent Access Layer
