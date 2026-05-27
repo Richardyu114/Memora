@@ -39,3 +39,39 @@ export interface MemoraRecord {
   source: RecordSource;
   provenance?: RecordProvenance;
 }
+
+export type MemoraEvent =
+  | {
+      event_id: string;
+      op: "upsert_record";
+      record: MemoraRecord;
+      created_at: string;
+      source: RecordSource;
+    }
+  | {
+      event_id: string;
+      op: "revise_record";
+      record_id: string;
+      patch: Record<string, unknown>;
+      reason?: string;
+      created_at: string;
+      source: RecordSource;
+    }
+  | {
+      event_id: string;
+      op: "promote_record" | "archive_record" | "quarantine_record";
+      record_id: string;
+      target_state?: RecordState;
+      reason?: string;
+      created_at: string;
+      source: RecordSource;
+    }
+  | {
+      event_id: string;
+      op: "link_records";
+      record_id: string;
+      linked_record_id: string;
+      link_type: string;
+      created_at: string;
+      source: RecordSource;
+    };
