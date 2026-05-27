@@ -4,7 +4,7 @@ Memora is a personal memory, skill, and soul layer for AI agents.
 
 It is designed for people who use multiple AI agents across multiple projects and want those agents to share the same durable context without making memory belong to any single agent. Agents are readers and writers; the long-lived context belongs to the user, projects, topics, and artifacts.
 
-> Status: design-stage project. The initial design spec lives in [docs/superpowers/specs/2026-05-27-memora-design.md](docs/superpowers/specs/2026-05-27-memora-design.md).
+> Status: design-stage project. The initial design spec lives in [docs/memora-design.md](docs/memora-design.md).
 
 ## What Memora Is
 
@@ -241,7 +241,7 @@ The default sync mode is planned to be `session`: pull at task start and push at
 
 The full first-version design is here:
 
-- [Memora Design Spec](docs/superpowers/specs/2026-05-27-memora-design.md)
+- [Memora Design Spec](docs/memora-design.md)
 
 ## License
 
