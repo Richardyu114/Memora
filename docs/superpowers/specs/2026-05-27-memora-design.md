@@ -76,6 +76,70 @@ Agent clients
   -> GitHub sync adapter
 ```
 
+```mermaid
+flowchart TB
+  subgraph Agents["Agent clients"]
+    Codex["Codex"]
+    Claude["Claude"]
+    Cursor["Cursor"]
+    Other["Other agents / scripts"]
+  end
+
+  subgraph Access["Access layer"]
+    MCP["MCP server"]
+    CLI["CLI: mem"]
+  end
+
+  subgraph Core["Core memory engine"]
+    Validate["Record validation"]
+    Events["Event append and replay"]
+    Boot["Boot context"]
+    Recall["Recall ranking"]
+    Promote["Promotion and state transitions"]
+    Safety["Sensitive content checks"]
+    Indexing["Snapshot and index rebuild"]
+  end
+
+  subgraph Store["Local-first store: ~/.agent-mem"]
+    EventFiles["events/<device_id>/<yyyy-mm>/<event_id>.json"]
+    Snapshots["snapshots/*.json"]
+    Indexes["indexes/*.json"]
+    Config["config.json"]
+  end
+
+  subgraph Remote["Sync backend"]
+    Git["Git sync adapter"]
+    GitHub["User-owned GitHub private repo"]
+  end
+
+  Codex --> MCP
+  Claude --> MCP
+  Cursor --> MCP
+  Other --> CLI
+
+  MCP --> Core
+  CLI --> Core
+
+  Core --> Validate
+  Core --> Events
+  Core --> Boot
+  Core --> Recall
+  Core --> Promote
+  Core --> Safety
+  Core --> Indexing
+
+  Events --> EventFiles
+  Indexing --> Snapshots
+  Indexing --> Indexes
+  Core --> Config
+
+  EventFiles --> Git
+  Git --> GitHub
+  GitHub --> Git
+  Git --> EventFiles
+  EventFiles --> Indexing
+```
+
 ### Agent Access Layer
 
 Memora exposes two first-version entry points:
